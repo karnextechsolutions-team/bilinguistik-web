@@ -1,10 +1,18 @@
+import re
+
+with open("app/page.tsx", "r") as f:
+    content = f.read()
+
+# We will just write a full new React component, copying the styles from the original.
+# It's safer and cleaner to just author the whole file as a string.
+
+new_content = """\
 "use client";
 
 import { useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
-
 import {
   ArrowRight,
   ShieldCheck,
@@ -96,26 +104,22 @@ export default function Home() {
       <header className="sticky top-0 z-50 bg-[#0B1B3D]/80 backdrop-blur-xl border-b border-white/10 shadow-xl transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex justify-between items-center">
           {/* Brand Logo */}
-          <Link href="/" className="flex items-center gap-3 sm:gap-4 group">
-            <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden shadow-[0_0_20px_rgba(197,155,39,0.35)] group-hover:scale-105 transition-all duration-300 shrink-0">
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="relative w-10 h-10 rounded-xl overflow-hidden shadow-[0_0_20px_rgba(197,155,39,0.35)] group-hover:scale-105 transition-all duration-300">
               <Image
                 src="/logo.png"
                 alt="Bilinguistik Logo"
-                width={56}
-                height={56}
+                width={40}
+                height={40}
                 className="object-contain w-full h-full rounded-xl"
               />
             </div>
-            <div className="flex flex-col justify-center gap-0">
-              <Image
-                src="/bilinguistik-text.png"
-                alt="Bilinguistik"
-                width={180}
-                height={50}
-                className="object-contain -ml-1"
-              />
-              <span className="whitespace-nowrap text-[8px] sm:text-[10px] font-bold text-amber-200/80 tracking-widest uppercase font-sans">
-                Sworn Translation & Language Solutions
+            <div className="flex flex-col">
+              <span className="text-xl sm:text-2xl font-black tracking-tight text-white uppercase leading-none">
+                Bilinguistik<span className="text-[#C59B27]">.</span>
+              </span>
+              <span className="text-[9px] sm:text-[10px] font-bold text-amber-200/80 tracking-widest uppercase mt-0.5">
+                Sworn Translation & Language Services
               </span>
             </div>
           </Link>
@@ -158,7 +162,7 @@ export default function Home() {
               href={WA_LINK}
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden px-3.5 py-2 rounded-xl font-bold text-xs bg-gradient-to-r from-[#C59B27] to-[#E2B746] text-slate-950 shadow-md items-center gap-1.5"
+              className="px-3.5 py-2 rounded-xl font-bold text-xs bg-gradient-to-r from-[#C59B27] to-[#E2B746] text-slate-950 sm:hidden shadow-md flex items-center gap-1.5"
             >
               <MessageSquare className="w-3.5 h-3.5" />
               <span>WhatsApp</span>
@@ -726,23 +730,19 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-10 pb-12 border-b border-white/10">
             {/* Brand Col */}
             <div className="space-y-3.5 md:col-span-1">
-              <div className="flex items-center gap-3 sm:gap-4">
-                <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden shadow-md shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="relative w-10 h-10 rounded-xl overflow-hidden shadow-md">
                   <Image
                     src="/logo.png"
                     alt="Bilinguistik Logo"
-                    width={56}
-                    height={56}
+                    width={40}
+                    height={40}
                     className="object-contain w-full h-full rounded-xl"
                   />
                 </div>
-                <Image
-                  src="/bilinguistik-text.png"
-                  alt="Bilinguistik"
-                  width={180}
-                  height={50}
-                  className="object-contain -ml-1"
-                />
+                <span className="text-2xl font-black tracking-wider uppercase text-white">
+                  Bilinguistik<span className="text-[#C59B27]">.</span>
+                </span>
               </div>
               <p className="text-slate-400 text-xs sm:text-sm leading-relaxed font-light">
                 Professional sworn translations of personal, educational, legal, and official documents. Accurate • Confidential • Professionally Certified.
@@ -798,7 +798,7 @@ export default function Home() {
 
           {/* Bottom Copyright */}
           <div className="pt-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-slate-500">
-            <p>© 2026 Bilinguistik. All rights reserved. Sworn Translation & Language Solutions.</p>
+            <p>© 2026 Bilinguistik. All rights reserved. Sworn Translation & Language Services.</p>
             <div className="flex items-center gap-6">
               <a href="#services" className="hover:text-[#C59B27] transition-colors">Services</a>
               <a href="#how-it-works" className="hover:text-[#C59B27] transition-colors">How It Works</a>
@@ -810,3 +810,7 @@ export default function Home() {
     </div>
   );
 }
+"""
+
+with open("app/page.tsx", "w") as f:
+    f.write(new_content)
