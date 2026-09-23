@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
-
 import {
   ArrowRight,
   ShieldCheck,
@@ -33,12 +32,28 @@ import {
   HelpCircle,
   Info
 } from "lucide-react";
-
-const WA_LINK = "https://wa.me/94752947862";
+import { HomepageCMSContent, DEFAULT_HOMEPAGE_CMS, fetchHomepageCMS } from "@/lib/cms";
 
 export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+  // Dynamic CMS State with Fallbacks
+  const [cms, setCms] = useState<HomepageCMSContent>(DEFAULT_HOMEPAGE_CMS);
+
+  useEffect(() => {
+    async function loadCmsData() {
+      const data = await fetchHomepageCMS();
+      if (data) {
+        setCms(data);
+      }
+    }
+    loadCmsData();
+  }, []);
+
+  const waLink = cms.footerWhatsApp
+    ? `https://wa.me/${cms.footerWhatsApp.replace(/[^0-9]/g, "")}`
+    : "https://wa.me/94752947862";
 
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
@@ -62,28 +77,28 @@ export default function Home() {
 
   const faqs = [
     {
-      question: "What languages do you translate?",
-      answer: "We specialize exclusively in Sinhala ↔ English translations."
+      question: cms.faq1Question || DEFAULT_HOMEPAGE_CMS.faq1Question,
+      answer: cms.faq1Answer || DEFAULT_HOMEPAGE_CMS.faq1Answer
     },
     {
-      question: "Do I need a sworn translation?",
-      answer: "Sworn translations are typically required for official documents submitted to government bodies, courts, embassies, and foreign universities. If you are unsure, please check with the receiving authority."
+      question: cms.faq2Question || DEFAULT_HOMEPAGE_CMS.faq2Question,
+      answer: cms.faq2Answer || DEFAULT_HOMEPAGE_CMS.faq2Answer
     },
     {
-      question: "Can I send my document online?",
-      answer: "Yes, you can easily send a clear scan or photograph of your document via WhatsApp or email."
+      question: cms.faq3Question || DEFAULT_HOMEPAGE_CMS.faq3Question,
+      answer: cms.faq3Answer || DEFAULT_HOMEPAGE_CMS.faq3Answer
     },
     {
-      question: "Can I receive a soft/hard copy?",
-      answer: "Yes, we provide both. You will receive an electronic soft copy, and we can arrange delivery of the hard copy to your address."
+      question: cms.faq4Question || DEFAULT_HOMEPAGE_CMS.faq4Question,
+      answer: cms.faq4Answer || DEFAULT_HOMEPAGE_CMS.faq4Answer
     },
     {
-      question: "How long does it take?",
-      answer: "Turnaround times depend on the document's complexity and length. We will provide an estimated completion time along with your quote."
+      question: cms.faq5Question || DEFAULT_HOMEPAGE_CMS.faq5Question,
+      answer: cms.faq5Answer || DEFAULT_HOMEPAGE_CMS.faq5Answer
     },
     {
-      question: "Do you offer urgent translations?",
-      answer: "Yes, we can accommodate urgent requests. Please mention your deadline when requesting a quote."
+      question: cms.faq6Question || DEFAULT_HOMEPAGE_CMS.faq6Question,
+      answer: cms.faq6Answer || DEFAULT_HOMEPAGE_CMS.faq6Answer
     }
   ];
 
@@ -137,12 +152,22 @@ export default function Home() {
             <Link href="#faq" className="hover:text-[#C59B27] transition-colors">
               FAQ
             </Link>
+            <Link href="/blog" className="hover:text-[#C59B27] transition-colors">
+              Blog
+            </Link>
+            <Link
+              href="/admin"
+              className="text-xs px-2.5 py-1 rounded-md bg-white/5 border border-white/10 hover:border-[#C59B27]/50 text-slate-300 hover:text-[#C59B27] flex items-center gap-1.5 transition-colors"
+            >
+              <Lock className="w-3 h-3 text-[#C59B27]" />
+              <span>Admin</span>
+            </Link>
           </nav>
 
           {/* Desktop Chat on WhatsApp Button */}
           <div className="hidden sm:flex items-center gap-4">
             <a
-              href={WA_LINK}
+              href={waLink}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-gradient-to-r from-[#C59B27] via-[#E2B746] to-[#A37B1B] text-slate-950 shadow-[0_0_25px_rgba(197,155,39,0.3)] hover:shadow-[0_0_35px_rgba(197,155,39,0.5)] hover:scale-105 active:scale-95 transition-all duration-300"
@@ -155,7 +180,7 @@ export default function Home() {
           {/* Mobile Navigation Toggle */}
           <div className="flex items-center gap-2 sm:gap-3 lg:hidden">
             <a
-              href={WA_LINK}
+              href={waLink}
               target="_blank"
               rel="noopener noreferrer"
               className="hidden px-3.5 py-2 rounded-xl font-bold text-xs bg-gradient-to-r from-[#C59B27] to-[#E2B746] text-slate-950 shadow-md items-center gap-1.5"
@@ -222,11 +247,30 @@ export default function Home() {
                 <span>FAQ</span>
                 <ChevronRight className="w-4 h-4 text-slate-500" />
               </Link>
+              <Link
+                href="/blog"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-2.5 border-b border-white/5 flex items-center justify-between hover:text-[#C59B27]"
+              >
+                <span>Blog</span>
+                <ChevronRight className="w-4 h-4 text-slate-500" />
+              </Link>
+              <Link
+                href="/admin"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-2.5 border-b border-white/5 flex items-center justify-between text-amber-200/80 hover:text-[#C59B27]"
+              >
+                <span className="flex items-center gap-2">
+                  <Lock className="w-4 h-4 text-[#C59B27]" />
+                  Admin Panel
+                </span>
+                <ChevronRight className="w-4 h-4 text-slate-500" />
+              </Link>
             </nav>
 
             <div className="pt-2">
               <a
-                href={WA_LINK}
+                href={waLink}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setMobileMenuOpen(false)}
@@ -267,10 +311,19 @@ export default function Home() {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.15]"
             >
-              Sinhala ↔ English<br/>
-              <span className="bg-gradient-to-r from-[#C59B27] via-[#E2B746] to-[#A37B1B] bg-clip-text text-transparent drop-shadow-[0_10px_35px_rgba(197,155,39,0.3)]">
-                Sworn Translations
-              </span>
+              {cms.heroTitle.includes("\n") ? (
+                <>
+                  {cms.heroTitle.split("\n")[0]}
+                  <br />
+                  <span className="bg-gradient-to-r from-[#C59B27] via-[#E2B746] to-[#A37B1B] bg-clip-text text-transparent drop-shadow-[0_10px_35px_rgba(197,155,39,0.3)]">
+                    {cms.heroTitle.split("\n").slice(1).join(" ")}
+                  </span>
+                </>
+              ) : (
+                <span className="bg-gradient-to-r from-white via-amber-100 to-[#C59B27] bg-clip-text text-transparent">
+                  {cms.heroTitle || DEFAULT_HOMEPAGE_CMS.heroTitle}
+                </span>
+              )}
             </motion.h1>
 
             {/* Subtext */}
@@ -280,7 +333,7 @@ export default function Home() {
               transition={{ duration: 0.8, delay: 0.4 }}
               className="text-base sm:text-xl text-slate-300 max-w-2xl mx-auto font-light leading-relaxed"
             >
-              Professional sworn translations of personal, educational, legal, and official documents. Accurate • Confidential • Professionally Certified.
+              {cms.heroSubtitle || DEFAULT_HOMEPAGE_CMS.heroSubtitle}
             </motion.p>
 
             {/* Action Buttons */}
@@ -291,7 +344,7 @@ export default function Home() {
               className="pt-2 flex flex-col sm:flex-row justify-center items-center gap-4"
             >
               <a
-                href={WA_LINK}
+                href={waLink}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-[#C59B27] via-[#E2B746] to-[#A37B1B] text-slate-950 font-bold text-base shadow-[0_0_30px_rgba(197,155,39,0.35)] hover:shadow-[0_0_45px_rgba(197,155,39,0.5)] hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2.5"
@@ -300,7 +353,7 @@ export default function Home() {
                 <span>Request a Translation Quote</span>
               </a>
               <a
-                href={WA_LINK}
+                href={waLink}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full sm:w-auto px-8 py-4 rounded-xl bg-white/[0.05] backdrop-blur-xl border border-white/20 text-white font-bold text-base hover:bg-white/10 hover:border-[#C59B27]/50 shadow-lg hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2"
@@ -313,11 +366,12 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Feature Highlights Grid */}
+      {/* 2. 3-BOX FEATURE HIGHLIGHTS GRID (DYNAMIC) */}
       <section className="relative overflow-hidden py-12 sm:py-16 px-4 sm:px-6 lg:px-8 border-t border-white/10 bg-[#070C1B]">
         <div className="relative z-20 max-w-7xl mx-auto space-y-12">
           {/* 3 Trust Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+            {/* Box 1 */}
             <motion.div
               initial={{ opacity: 0, y: 25 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -328,12 +382,15 @@ export default function Home() {
               <div className="w-12 h-12 rounded-xl bg-[#C59B27]/10 text-[#C59B27] border border-[#C59B27]/30 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform shadow-md">
                 <Award className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">Government Sworn Translators</h3>
+              <h3 className="text-xl font-bold text-white mb-2">
+                {cms.trust1Title || DEFAULT_HOMEPAGE_CMS.trust1Title}
+              </h3>
               <p className="text-slate-300 text-sm leading-relaxed font-light">
-                Officially authorized translations accepted by foreign embassies, courts, and government bodies.
+                {cms.trust1Desc || DEFAULT_HOMEPAGE_CMS.trust1Desc}
               </p>
             </motion.div>
 
+            {/* Box 2 */}
             <motion.div
               initial={{ opacity: 0, y: 25 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -344,12 +401,15 @@ export default function Home() {
               <div className="w-12 h-12 rounded-xl bg-[#C59B27]/10 text-[#C59B27] border border-[#C59B27]/30 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform shadow-md">
                 <Clock className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">Clear & Timely Communication</h3>
+              <h3 className="text-xl font-bold text-white mb-2">
+                {cms.trust2Title || DEFAULT_HOMEPAGE_CMS.trust2Title}
+              </h3>
               <p className="text-slate-300 text-sm leading-relaxed font-light">
-                Receive your initial quote quickly and stay updated throughout the translation process.
+                {cms.trust2Desc || DEFAULT_HOMEPAGE_CMS.trust2Desc}
               </p>
             </motion.div>
 
+            {/* Box 3 */}
             <motion.div
               initial={{ opacity: 0, y: 25 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -360,16 +420,18 @@ export default function Home() {
               <div className="w-12 h-12 rounded-xl bg-[#C59B27]/10 text-[#C59B27] border border-[#C59B27]/30 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform shadow-md">
                 <Lock className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">Absolute Confidentiality</h3>
+              <h3 className="text-xl font-bold text-white mb-2">
+                {cms.trust3Title || DEFAULT_HOMEPAGE_CMS.trust3Title}
+              </h3>
               <p className="text-slate-300 text-sm leading-relaxed font-light">
-                Your legal, financial, and personal certificates remain completely safe and strictly protected.
+                {cms.trust3Desc || DEFAULT_HOMEPAGE_CMS.trust3Desc}
               </p>
             </motion.div>
           </div>
         </div>
       </section>
 
-      {/* 2. SERVICES SECTION */}
+      {/* 3. SERVICES SECTION */}
       <section id="services" className="relative overflow-hidden py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
         {/* Background Video: z-0 */}
         <video
@@ -406,10 +468,10 @@ export default function Home() {
                   <FileText className="w-6 h-6" />
                 </div>
                 <h3 className="text-xl sm:text-2xl font-bold text-white mt-3 mb-3">
-                  Personal & Civil Documents
+                  {cms.service1Title || DEFAULT_HOMEPAGE_CMS.service1Title}
                 </h3>
                 <p className="text-slate-300 text-sm leading-relaxed font-light mb-5">
-                  Birth, marriage, divorce, death certificates, NICs, Passports, Police clearance.
+                  {cms.service1Desc || DEFAULT_HOMEPAGE_CMS.service1Desc}
                 </p>
               </div>
             </motion.div>
@@ -427,10 +489,10 @@ export default function Home() {
                   <GraduationCap className="w-6 h-6" />
                 </div>
                 <h3 className="text-xl sm:text-2xl font-bold text-white mt-3 mb-3">
-                  Educational Documents
+                  {cms.service2Title || DEFAULT_HOMEPAGE_CMS.service2Title}
                 </h3>
                 <p className="text-slate-300 text-sm leading-relaxed font-light mb-5">
-                  School certificates, G.C.E. O/L and A/L, Academic transcripts, Diplomas, Degrees.
+                  {cms.service2Desc || DEFAULT_HOMEPAGE_CMS.service2Desc}
                 </p>
               </div>
             </motion.div>
@@ -448,10 +510,10 @@ export default function Home() {
                   <Scale className="w-6 h-6" />
                 </div>
                 <h3 className="text-xl sm:text-2xl font-bold text-white mt-3 mb-3">
-                  Legal & Official Documents
+                  {cms.service3Title || DEFAULT_HOMEPAGE_CMS.service3Title}
                 </h3>
                 <p className="text-slate-300 text-sm leading-relaxed font-light mb-5">
-                  Affidavits, Declarations, Powers of Attorney, Court-related documents.
+                  {cms.service3Desc || DEFAULT_HOMEPAGE_CMS.service3Desc}
                 </p>
               </div>
             </motion.div>
@@ -469,10 +531,10 @@ export default function Home() {
                   <Building2 className="w-6 h-6" />
                 </div>
                 <h3 className="text-xl sm:text-2xl font-bold text-white mt-3 mb-3">
-                  Business & Corporate Documents
+                  {cms.service4Title || DEFAULT_HOMEPAGE_CMS.service4Title}
                 </h3>
                 <p className="text-slate-300 text-sm leading-relaxed font-light mb-5">
-                  Agreements, Contracts, Company documents, Board resolutions.
+                  {cms.service4Desc || DEFAULT_HOMEPAGE_CMS.service4Desc}
                 </p>
               </div>
             </motion.div>
@@ -480,7 +542,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 3. HOW IT WORKS SECTION */}
+      {/* 4. HOW IT WORKS SECTION */}
       <section id="how-it-works" className="relative overflow-hidden py-16 sm:py-24 px-4 sm:px-6 lg:px-8 border-y border-white/10">
         {/* Background Video: z-0 */}
         <video
@@ -516,9 +578,11 @@ export default function Home() {
                   01
                 </div>
               </div>
-              <h3 className="text-lg font-bold text-white mb-2">Send Your Document</h3>
+              <h3 className="text-lg font-bold text-white mb-2">
+                {cms.step1Title || DEFAULT_HOMEPAGE_CMS.step1Title}
+              </h3>
               <p className="text-slate-300 text-xs sm:text-sm leading-relaxed font-light">
-                Send a clear scan or photograph via WhatsApp or email.
+                {cms.step1Desc || DEFAULT_HOMEPAGE_CMS.step1Desc}
               </p>
             </motion.div>
 
@@ -534,9 +598,11 @@ export default function Home() {
                   02
                 </div>
               </div>
-              <h3 className="text-lg font-bold text-white mb-2">Receive a Quote</h3>
+              <h3 className="text-lg font-bold text-white mb-2">
+                {cms.step2Title || DEFAULT_HOMEPAGE_CMS.step2Title}
+              </h3>
               <p className="text-slate-300 text-xs sm:text-sm leading-relaxed font-light">
-                We review the document and confirm the translation fee and estimated completion time.
+                {cms.step2Desc || DEFAULT_HOMEPAGE_CMS.step2Desc}
               </p>
             </motion.div>
 
@@ -552,9 +618,11 @@ export default function Home() {
                   03
                 </div>
               </div>
-              <h3 className="text-lg font-bold text-white mb-2">Confirm the Translation</h3>
+              <h3 className="text-lg font-bold text-white mb-2">
+                {cms.step3Title || DEFAULT_HOMEPAGE_CMS.step3Title}
+              </h3>
               <p className="text-slate-300 text-xs sm:text-sm leading-relaxed font-light">
-                Once you approve the quotation, the translation process begins.
+                {cms.step3Desc || DEFAULT_HOMEPAGE_CMS.step3Desc}
               </p>
             </motion.div>
 
@@ -570,16 +638,18 @@ export default function Home() {
                   04
                 </div>
               </div>
-              <h3 className="text-lg font-bold text-white mb-2">Receive Your Translation</h3>
+              <h3 className="text-lg font-bold text-white mb-2">
+                {cms.step4Title || DEFAULT_HOMEPAGE_CMS.step4Title}
+              </h3>
               <p className="text-slate-300 text-xs sm:text-sm leading-relaxed font-light">
-                Receive the completed certified translation electronically and/or arrange delivery of the hard copy.
+                {cms.step4Desc || DEFAULT_HOMEPAGE_CMS.step4Desc}
               </p>
             </motion.div>
           </div>
         </div>
       </section>
 
-      {/* 4. WHY US SECTION */}
+      {/* 5. WHY US SECTION */}
       <section id="why-us" className="relative overflow-hidden py-16 sm:py-24 px-4 sm:px-6 lg:px-8 bg-[#070C1B]">
         <div className="relative z-20 max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
@@ -587,47 +657,57 @@ export default function Home() {
               Why Choose Bilinguistik?
             </h2>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 justify-center">
             <div className="flex flex-col p-6 rounded-xl bg-white/[0.04] border border-white/10 shadow-lg">
-              <h4 className="font-bold text-white text-lg mb-2 text-[#C59B27]">Accuracy</h4>
+              <h4 className="font-bold text-white text-lg mb-2 text-[#C59B27]">
+                {cms.why1Title || DEFAULT_HOMEPAGE_CMS.why1Title}
+              </h4>
               <p className="text-slate-300 text-sm leading-relaxed font-light">
-                Careful translation of names, dates, numbers, terminology and official information.
+                {cms.why1Desc || DEFAULT_HOMEPAGE_CMS.why1Desc}
               </p>
             </div>
 
             <div className="flex flex-col p-6 rounded-xl bg-white/[0.04] border border-white/10 shadow-lg">
-              <h4 className="font-bold text-white text-lg mb-2 text-[#C59B27]">Professional Certification</h4>
+              <h4 className="font-bold text-white text-lg mb-2 text-[#C59B27]">
+                {cms.why2Title || DEFAULT_HOMEPAGE_CMS.why2Title}
+              </h4>
               <p className="text-slate-300 text-sm leading-relaxed font-light">
-                Translations are prepared and certified by an authorized Sworn Translator, where applicable.
+                {cms.why2Desc || DEFAULT_HOMEPAGE_CMS.why2Desc}
               </p>
             </div>
 
             <div className="flex flex-col p-6 rounded-xl bg-white/[0.04] border border-white/10 shadow-lg">
-              <h4 className="font-bold text-white text-lg mb-2 text-[#C59B27]">Confidentiality</h4>
+              <h4 className="font-bold text-white text-lg mb-2 text-[#C59B27]">
+                {cms.why3Title || DEFAULT_HOMEPAGE_CMS.why3Title}
+              </h4>
               <p className="text-slate-300 text-sm leading-relaxed font-light">
-                Your personal, legal, educational and business documents are handled with care and confidentiality.
+                {cms.why3Desc || DEFAULT_HOMEPAGE_CMS.why3Desc}
               </p>
             </div>
 
             <div className="flex flex-col p-6 rounded-xl bg-white/[0.04] border border-white/10 shadow-lg md:col-start-1 lg:col-start-2">
-              <h4 className="font-bold text-white text-lg mb-2 text-[#C59B27]">Personal Attention</h4>
+              <h4 className="font-bold text-white text-lg mb-2 text-[#C59B27]">
+                {cms.why4Title || DEFAULT_HOMEPAGE_CMS.why4Title}
+              </h4>
               <p className="text-slate-300 text-sm leading-relaxed font-light">
-                Each document is reviewed individually according to its content and intended use.
+                {cms.why4Desc || DEFAULT_HOMEPAGE_CMS.why4Desc}
               </p>
             </div>
 
             <div className="flex flex-col p-6 rounded-xl bg-white/[0.04] border border-white/10 shadow-lg">
-              <h4 className="font-bold text-white text-lg mb-2 text-[#C59B27]">Convenient Service</h4>
+              <h4 className="font-bold text-white text-lg mb-2 text-[#C59B27]">
+                {cms.why5Title || DEFAULT_HOMEPAGE_CMS.why5Title}
+              </h4>
               <p className="text-slate-300 text-sm leading-relaxed font-light">
-                Submit your document remotely and receive your completed translation without unnecessary travel.
+                {cms.why5Desc || DEFAULT_HOMEPAGE_CMS.why5Desc}
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 5. ABOUT BILINGUISTIK */}
+      {/* 6. ABOUT BILINGUISTIK */}
       <section id="about" className="relative overflow-hidden py-16 sm:py-24 px-4 sm:px-6 lg:px-8 border-t border-white/10">
         {/* Background Video: z-0 */}
         <video
@@ -644,12 +724,12 @@ export default function Home() {
         <div className="relative z-20 max-w-4xl mx-auto text-center space-y-6">
           <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">About Bilinguistik</h2>
           <p className="text-slate-300 text-base sm:text-lg leading-relaxed font-light">
-            Bilinguistik provides professional Sinhala ↔ English translation services. We emphasize accuracy and professional responsibility in handling your personal, educational, legal, and business documents. Every translation is managed with care to ensure the final document faithfully represents the original.
+            {cms.aboutText || DEFAULT_HOMEPAGE_CMS.aboutText}
           </p>
         </div>
       </section>
 
-      {/* 6. WHAT IS A SWORN TRANSLATION? (Disclaimer) */}
+      {/* 7. WHAT IS A SWORN TRANSLATION? (Disclaimer) */}
       <section className="relative py-12 px-4 sm:px-6 lg:px-8 bg-[#0B1B3D]">
         <div className="max-w-4xl mx-auto p-6 sm:p-8 rounded-2xl bg-amber-900/20 border border-[#C59B27]/30 shadow-lg flex flex-col md:flex-row gap-6 items-start">
           <Info className="w-8 h-8 text-[#C59B27] shrink-0 mt-1" />
@@ -665,7 +745,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 7. FAQ SECTION */}
+      {/* 8. FAQ SECTION */}
       <section id="faq" className="relative py-16 sm:py-24 px-4 sm:px-6 lg:px-8 bg-[#070C1B] border-t border-white/10">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
@@ -708,7 +788,7 @@ export default function Home() {
               </h3>
             </div>
             <a
-              href={WA_LINK}
+              href={waLink}
               target="_blank"
               rel="noopener noreferrer"
               className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-[#C59B27] via-[#E2B746] to-[#A37B1B] text-slate-950 font-bold text-sm whitespace-nowrap shadow-lg shadow-[#C59B27]/30 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2 shrink-0"
@@ -720,32 +800,28 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FOOTER */}
+      {/* FOOTER (DYNAMIC CMS) */}
       <footer id="contact" className="relative z-20 bg-[#070C1B] text-white pt-16 pb-10 px-4 sm:px-6 lg:px-8 border-t border-white/10">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-10 pb-12 border-b border-white/10">
             {/* Brand Col */}
             <div className="space-y-3.5 md:col-span-1">
-              <div className="flex items-center gap-3 sm:gap-4">
-                <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden shadow-md shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="relative w-10 h-10 rounded-xl overflow-hidden shadow-md">
                   <Image
                     src="/logo.png"
                     alt="Bilinguistik Logo"
-                    width={56}
-                    height={56}
+                    width={40}
+                    height={40}
                     className="object-contain w-full h-full rounded-xl"
                   />
                 </div>
-                <Image
-                  src="/bilinguistik-text.png"
-                  alt="Bilinguistik"
-                  width={180}
-                  height={50}
-                  className="object-contain -ml-1"
-                />
+                <span className="text-2xl font-black tracking-wider uppercase text-white">
+                  Bilinguistik<span className="text-[#C59B27]">.</span>
+                </span>
               </div>
               <p className="text-slate-400 text-xs sm:text-sm leading-relaxed font-light">
-                Professional sworn translations of personal, educational, legal, and official documents. Accurate • Confidential • Professionally Certified.
+                {cms.footerDesc || DEFAULT_HOMEPAGE_CMS.footerDesc}
               </p>
             </div>
 
@@ -753,10 +829,10 @@ export default function Home() {
             <div className="space-y-3">
               <h4 className="text-xs font-bold text-white uppercase tracking-widest">Services</h4>
               <ul className="space-y-2 text-xs sm:text-sm text-slate-400 font-light">
-                <li><Link href="#services" className="hover:text-[#C59B27] transition-colors">Personal & Civil Documents</Link></li>
-                <li><Link href="#services" className="hover:text-[#C59B27] transition-colors">Educational Documents</Link></li>
-                <li><Link href="#services" className="hover:text-[#C59B27] transition-colors">Legal & Official Documents</Link></li>
-                <li><Link href="#services" className="hover:text-[#C59B27] transition-colors">Business & Corporate Documents</Link></li>
+                <li><Link href="#services" className="hover:text-[#C59B27] transition-colors">{cms.service1Title || DEFAULT_HOMEPAGE_CMS.service1Title}</Link></li>
+                <li><Link href="#services" className="hover:text-[#C59B27] transition-colors">{cms.service2Title || DEFAULT_HOMEPAGE_CMS.service2Title}</Link></li>
+                <li><Link href="#services" className="hover:text-[#C59B27] transition-colors">{cms.service3Title || DEFAULT_HOMEPAGE_CMS.service3Title}</Link></li>
+                <li><Link href="#services" className="hover:text-[#C59B27] transition-colors">{cms.service4Title || DEFAULT_HOMEPAGE_CMS.service4Title}</Link></li>
               </ul>
             </div>
 
@@ -773,24 +849,24 @@ export default function Home() {
               <h4 className="text-xs font-bold text-white uppercase tracking-widest">Contact</h4>
               <div className="space-y-2.5 text-xs sm:text-sm text-slate-300">
                 <a
-                  href={WA_LINK}
+                  href={waLink}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 text-emerald-400 hover:underline font-bold"
                 >
                   <MessageSquare className="w-4 h-4 shrink-0" />
-                  <span>WhatsApp: +94 75 294 7862</span>
+                  <span>WhatsApp: {cms.footerWhatsApp || DEFAULT_HOMEPAGE_CMS.footerWhatsApp}</span>
                 </a>
                 <a
-                  href="mailto:info@bilinguisti.lk"
+                  href={`mailto:${cms.footerEmail || DEFAULT_HOMEPAGE_CMS.footerEmail}`}
                   className="flex items-center gap-2 hover:text-[#C59B27] transition-colors"
                 >
                   <Mail className="w-4 h-4 text-[#C59B27] shrink-0" />
-                  <span>info@bilinguisti.lk</span>
+                  <span>{cms.footerEmail || DEFAULT_HOMEPAGE_CMS.footerEmail}</span>
                 </a>
                 <div className="flex items-center gap-2 text-slate-400">
                   <span className="text-[#C59B27] font-bold">WWW</span>
-                  <span>www.bilinguisti.lk</span>
+                  <span>{cms.footerWebsite || DEFAULT_HOMEPAGE_CMS.footerWebsite}</span>
                 </div>
               </div>
             </div>
@@ -798,7 +874,7 @@ export default function Home() {
 
           {/* Bottom Copyright */}
           <div className="pt-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-slate-500">
-            <p>© 2026 Bilinguistik. All rights reserved. Sworn Translation & Language Solutions.</p>
+            <p>{cms.footerCopyright || DEFAULT_HOMEPAGE_CMS.footerCopyright}</p>
             <div className="flex items-center gap-6">
               <a href="#services" className="hover:text-[#C59B27] transition-colors">Services</a>
               <a href="#how-it-works" className="hover:text-[#C59B27] transition-colors">How It Works</a>
