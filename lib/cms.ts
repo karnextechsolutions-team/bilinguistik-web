@@ -73,7 +73,7 @@ export interface HomepageCMSContent {
 export const DEFAULT_HOMEPAGE_CMS: HomepageCMSContent = {
   // Hero
   heroTitle: "Sinhala ↔ English Sworn Translations",
-  heroSubtitle: "Professional sworn translations of personal, educational, legal, and official documents. Accurate • Confidential • Professionally Certified.",
+  heroSubtitle: "Professional sworn translations of personal, educational, legal, business, and official documents.",
 
   // 3-Box Feature Highlights
   trust1Title: "Government Sworn Translators",
