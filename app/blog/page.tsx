@@ -6,20 +6,26 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { ArrowRight, Calendar, Clock, BookOpen, MessageSquare, Mail } from "lucide-react";
 import Navbar from "@/components/Navbar";
-import { getAllBlogs, BlogPost } from "@/lib/blogs";
+import { fetchBlogs, BlogPost } from "@/lib/blogs";
 import { HomepageCMSContent, DEFAULT_HOMEPAGE_CMS, fetchHomepageCMS } from "@/lib/cms";
 
 export default function BlogIndexPage() {
   const [blogs, setBlogs] = useState<BlogPost[]>([]);
   const [cms, setCms] = useState<HomepageCMSContent>(DEFAULT_HOMEPAGE_CMS);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    setBlogs(getAllBlogs());
-    async function loadCms() {
-      const data = await fetchHomepageCMS();
-      if (data) setCms(data);
+    async function loadData() {
+      setIsLoading(true);
+      const [blogsData, cmsData] = await Promise.all([
+        fetchBlogs(),
+        fetchHomepageCMS(),
+      ]);
+      setBlogs(blogsData);
+      if (cmsData) setCms(cmsData);
+      setIsLoading(false);
     }
-    loadCms();
+    loadData();
   }, []);
 
   const waLink = cms.footerWhatsApp
@@ -56,7 +62,12 @@ export default function BlogIndexPage() {
 
       {/* Blog Cards Grid Section */}
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 w-full">
-        {blogs.length === 0 ? (
+        {isLoading ? (
+          <div className="text-center py-20 bg-white/[0.02] rounded-3xl border border-white/10">
+            <div className="w-8 h-8 border-4 border-[#C59B27] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+            <p className="text-slate-400 text-sm">Loading blog articles from Supabase...</p>
+          </div>
+        ) : blogs.length === 0 ? (
           <div className="text-center py-20 bg-white/[0.02] rounded-3xl border border-white/10">
             <p className="text-slate-400">No blog articles found.</p>
           </div>
@@ -159,7 +170,7 @@ export default function BlogIndexPage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-10 pb-12 border-b border-white/10">
             <div className="space-y-3.5 md:col-span-1">
               <div className="flex items-center gap-3">
-                <div className="relative w-10 h-10 rounded-xl overflow-hidden shadow-md">
+                <div className="relative w-10 h-10 rounded-xl overflow-hidden shadow-md shrink-0">
                   <Image
                     src="/logo.png"
                     alt="Bilinguistik Logo"
@@ -168,9 +179,13 @@ export default function BlogIndexPage() {
                     className="object-contain"
                   />
                 </div>
-                <span className="text-2xl font-black tracking-wider uppercase text-white">
-                  Bilinguistik<span className="text-[#C59B27]">.</span>
-                </span>
+                <Image
+                  src="/bilinguistik-text.png"
+                  alt="Bilinguistik"
+                  width={160}
+                  height={45}
+                  className="object-contain"
+                />
               </div>
               <p className="text-slate-400 text-xs sm:text-sm leading-relaxed font-light">
                 {cms.footerDesc || DEFAULT_HOMEPAGE_CMS.footerDesc}

@@ -807,7 +807,7 @@ export default function Home() {
             {/* Brand Col */}
             <div className="space-y-3.5 md:col-span-1">
               <div className="flex items-center gap-3">
-                <div className="relative w-10 h-10 rounded-xl overflow-hidden shadow-md">
+                <div className="relative w-10 h-10 rounded-xl overflow-hidden shadow-md shrink-0">
                   <Image
                     src="/logo.png"
                     alt="Bilinguistik Logo"
@@ -816,9 +816,13 @@ export default function Home() {
                     className="object-contain w-full h-full rounded-xl"
                   />
                 </div>
-                <span className="text-2xl font-black tracking-wider uppercase text-white">
-                  Bilinguistik<span className="text-[#C59B27]">.</span>
-                </span>
+                <Image
+                  src="/bilinguistik-text.png"
+                  alt="Bilinguistik"
+                  width={160}
+                  height={45}
+                  className="object-contain"
+                />
               </div>
               <p className="text-slate-400 text-xs sm:text-sm leading-relaxed font-light">
                 {cms.footerDesc || DEFAULT_HOMEPAGE_CMS.footerDesc}

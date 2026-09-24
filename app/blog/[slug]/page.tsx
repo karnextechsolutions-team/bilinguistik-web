@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Calendar, Clock, User, MessageSquare, BookOpen, Mail } from "lucide-react";
 import Navbar from "@/components/Navbar";
-import { getBlogBySlug, BlogPost } from "@/lib/blogs";
+import { fetchBlogBySlug, BlogPost } from "@/lib/blogs";
 import { HomepageCMSContent, DEFAULT_HOMEPAGE_CMS, fetchHomepageCMS } from "@/lib/cms";
 
 export default function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -16,14 +16,15 @@ export default function BlogPostPage({ params }: { params: Promise<{ slug: strin
   const [cms, setCms] = useState<HomepageCMSContent>(DEFAULT_HOMEPAGE_CMS);
 
   useEffect(() => {
-    const found = getBlogBySlug(slug);
-    setPost(found || null);
-
-    async function loadCms() {
-      const data = await fetchHomepageCMS();
-      if (data) setCms(data);
+    async function loadData() {
+      const [blogData, cmsData] = await Promise.all([
+        fetchBlogBySlug(slug),
+        fetchHomepageCMS(),
+      ]);
+      setPost(blogData);
+      if (cmsData) setCms(cmsData);
     }
-    loadCms();
+    loadData();
   }, [slug]);
 
   const waLink = cms.footerWhatsApp
@@ -166,7 +167,7 @@ export default function BlogPostPage({ params }: { params: Promise<{ slug: strin
           <div className="grid grid-cols-1 md:grid-cols-4 gap-10 pb-12 border-b border-white/10">
             <div className="space-y-3.5 md:col-span-1">
               <div className="flex items-center gap-3">
-                <div className="relative w-10 h-10 rounded-xl overflow-hidden shadow-md">
+                <div className="relative w-10 h-10 rounded-xl overflow-hidden shadow-md shrink-0">
                   <Image
                     src="/logo.png"
                     alt="Bilinguistik Logo"
@@ -175,9 +176,13 @@ export default function BlogPostPage({ params }: { params: Promise<{ slug: strin
                     className="object-contain"
                   />
                 </div>
-                <span className="text-2xl font-black tracking-wider uppercase text-white">
-                  Bilinguistik<span className="text-[#C59B27]">.</span>
-                </span>
+                <Image
+                  src="/bilinguistik-text.png"
+                  alt="Bilinguistik"
+                  width={160}
+                  height={45}
+                  className="object-contain"
+                />
               </div>
               <p className="text-slate-400 text-xs sm:text-sm leading-relaxed font-light">
                 {cms.footerDesc || DEFAULT_HOMEPAGE_CMS.footerDesc}

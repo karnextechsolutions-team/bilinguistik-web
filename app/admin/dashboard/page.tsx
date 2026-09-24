@@ -24,9 +24,10 @@ import {
   ListOrdered,
   Briefcase,
   ShieldCheck,
-  PanelBottom
+  PanelBottom,
+  X
 } from "lucide-react";
-import { getAllBlogs, addBlog, deleteBlog, BlogPost } from "@/lib/blogs";
+import { fetchBlogs, createBlog, updateBlog, deleteBlogById, generateSlug, BlogPost } from "@/lib/blogs";
 import { HomepageCMSContent, DEFAULT_HOMEPAGE_CMS, fetchHomepageCMS, saveHomepageCMS } from "@/lib/cms";
 
 export default function AdminDashboardPage() {
@@ -43,12 +44,15 @@ export default function AdminDashboardPage() {
 
   // Blogs State
   const [blogsList, setBlogsList] = useState<BlogPost[]>([]);
+  const [editingBlogId, setEditingBlogId] = useState<string | null>(null);
+  const [isLoadingBlogs, setIsLoadingBlogs] = useState<boolean>(true);
+  const [isPublishingBlog, setIsPublishingBlog] = useState<boolean>(false);
   const [newTitle, setNewTitle] = useState("");
   const [newCategory, setNewCategory] = useState("Document Guide");
   const [newContent, setNewContent] = useState("");
   const [newCoverImage, setNewCoverImage] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [blogPublishedNotice, setBlogPublishedNotice] = useState(false);
+  const [blogNotice, setBlogNotice] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
   useEffect(() => {
     // Protected route authentication check
@@ -69,8 +73,15 @@ export default function AdminDashboardPage() {
 
     loadCmsData();
 
-    // Load blogs list
-    setBlogsList(getAllBlogs());
+    // Fetch Blogs from Supabase
+    async function loadBlogsData() {
+      setIsLoadingBlogs(true);
+      const data = await fetchBlogs();
+      setBlogsList(data);
+      setIsLoadingBlogs(false);
+    }
+
+    loadBlogsData();
   }, [router]);
 
   const handleLogout = () => {
@@ -108,41 +119,102 @@ export default function AdminDashboardPage() {
     }
   };
 
-  const handlePublishBlog = (e: FormEvent) => {
-    e.preventDefault();
-    if (!newTitle.trim() || !newContent.trim()) return;
+  const handleEditBlog = (blog: BlogPost) => {
+    setEditingBlogId(blog.id);
+    setNewTitle(blog.title);
+    setNewCategory(blog.category);
+    setNewContent(blog.content);
+    const cover = blog.image_url || blog.coverImage || "";
+    setNewCoverImage(cover);
+    setImagePreview(cover || null);
 
-    const cover = newCoverImage.trim() || "https://images.unsplash.com/photo-1450133064473-71024230f91b?q=80&w=1200&auto=format&fit=crop";
-    const slug = newTitle
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)+/g, "");
+    const formEl = document.getElementById("blog-form");
+    if (formEl) {
+      formEl.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
-    addBlog({
-      title: newTitle,
-      slug: slug || "blog-post-" + Date.now(),
-      excerpt: newContent.slice(0, 140) + "...",
-      content: newContent,
-      coverImage: cover,
-      category: newCategory,
-      author: "Admin Editor",
-      readTime: Math.ceil(newContent.split(" ").length / 200) + " min read"
-    });
-
-    setBlogsList(getAllBlogs());
+  const handleCancelEdit = () => {
+    setEditingBlogId(null);
     setNewTitle("");
     setNewCategory("Document Guide");
     setNewContent("");
     setNewCoverImage("");
     setImagePreview(null);
-    setBlogPublishedNotice(true);
-    setTimeout(() => setBlogPublishedNotice(false), 4000);
   };
 
-  const handleDeleteBlog = (id: string) => {
-    if (confirm("Are you sure you want to delete this blog post?")) {
-      deleteBlog(id);
-      setBlogsList(getAllBlogs());
+  const handlePublishOrUpdateBlog = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!newTitle.trim() || !newContent.trim()) return;
+
+    setIsPublishingBlog(true);
+    setBlogNotice(null);
+
+    const cover =
+      newCoverImage.trim() ||
+      "https://images.unsplash.com/photo-1450133064473-71024230f91b?q=80&w=1200&auto=format&fit=crop";
+    const slug = generateSlug(newTitle);
+
+    let res;
+    if (editingBlogId) {
+      res = await updateBlog(editingBlogId, {
+        title: newTitle,
+        slug,
+        content: newContent,
+        image_url: cover,
+        category: newCategory,
+      });
+    } else {
+      res = await createBlog({
+        title: newTitle,
+        slug,
+        content: newContent,
+        image_url: cover,
+        category: newCategory,
+      });
+    }
+
+    setIsPublishingBlog(false);
+
+    if (res.success) {
+      const refreshed = await fetchBlogs();
+      setBlogsList(refreshed);
+      setBlogNotice({
+        type: "success",
+        message: editingBlogId
+          ? "Blog article updated successfully in Supabase!"
+          : "New blog article published successfully to Supabase!",
+      });
+      handleCancelEdit();
+      setTimeout(() => setBlogNotice(null), 5000);
+    } else {
+      setBlogNotice({
+        type: "error",
+        message: `Failed to save blog post to Supabase: ${res.error || "Unknown error"}`,
+      });
+    }
+  };
+
+  const handleDeleteBlog = async (id: string) => {
+    if (confirm("Are you sure you want to delete this blog post from Supabase?")) {
+      const res = await deleteBlogById(id);
+      if (res.success) {
+        if (editingBlogId === id) {
+          handleCancelEdit();
+        }
+        const refreshed = await fetchBlogs();
+        setBlogsList(refreshed);
+        setBlogNotice({
+          type: "success",
+          message: "Blog post deleted successfully from Supabase.",
+        });
+        setTimeout(() => setBlogNotice(null), 4000);
+      } else {
+        setBlogNotice({
+          type: "error",
+          message: `Failed to delete blog post: ${res.error || "Unknown error"}`,
+        });
+      }
     }
   };
 
@@ -877,20 +949,51 @@ export default function AdminDashboardPage() {
             transition={{ duration: 0.3 }}
             className="space-y-10"
           >
-            {blogPublishedNotice && (
-              <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-sm flex items-center gap-3">
-                <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0" />
-                <span>New blog post published successfully! It is now visible in the Public Blog section.</span>
+            {blogNotice && (
+              <div
+                className={`p-4 rounded-xl border text-sm flex items-center gap-3 shadow-lg ${
+                  blogNotice.type === "success"
+                    ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
+                    : "bg-red-500/10 border-red-500/30 text-red-300"
+                }`}
+              >
+                {blogNotice.type === "success" ? (
+                  <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0" />
+                ) : (
+                  <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
+                )}
+                <span>{blogNotice.message}</span>
               </div>
             )}
 
-            {/* Create New Blog Form */}
-            <form onSubmit={handlePublishBlog} className="bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl">
+            {/* Create / Edit Blog Form */}
+            <form
+              id="blog-form"
+              onSubmit={handlePublishOrUpdateBlog}
+              className="bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl"
+            >
               <div className="flex items-center justify-between pb-4 border-b border-white/10">
                 <div className="flex items-center gap-3">
-                  <PlusCircle className="w-6 h-6 text-[#C59B27]" />
-                  <h3 className="text-lg font-bold text-white">Create & Publish New Blog Post</h3>
+                  {editingBlogId ? (
+                    <FileEdit className="w-6 h-6 text-[#C59B27]" />
+                  ) : (
+                    <PlusCircle className="w-6 h-6 text-[#C59B27]" />
+                  )}
+                  <h3 className="text-lg font-bold text-white">
+                    {editingBlogId ? "Edit & Update Blog Article" : "Create & Publish New Blog Post"}
+                  </h3>
                 </div>
+
+                {editingBlogId && (
+                  <button
+                    type="button"
+                    onClick={handleCancelEdit}
+                    className="text-xs px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 flex items-center gap-1 transition-colors"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                    <span>Cancel Editing</span>
+                  </button>
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -992,14 +1095,31 @@ export default function AdminDashboardPage() {
                 />
               </div>
 
-              {/* Submit Button */}
-              <div className="pt-2 flex justify-end">
+              {/* Submit Buttons */}
+              <div className="pt-2 flex items-center justify-end gap-3">
+                {editingBlogId && (
+                  <button
+                    type="button"
+                    onClick={handleCancelEdit}
+                    className="px-6 py-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-sm transition-all"
+                  >
+                    Cancel Edit
+                  </button>
+                )}
+
                 <button
                   type="submit"
-                  className="px-8 py-3.5 rounded-xl bg-gradient-to-r from-[#C59B27] via-[#E2B746] to-[#A37B1B] text-slate-950 font-bold text-sm shadow-[0_0_25px_rgba(197,155,39,0.3)] hover:shadow-[0_0_35px_rgba(197,155,39,0.5)] hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
+                  disabled={isPublishingBlog}
+                  className="px-8 py-3.5 rounded-xl bg-gradient-to-r from-[#C59B27] via-[#E2B746] to-[#A37B1B] text-slate-950 font-bold text-sm shadow-[0_0_25px_rgba(197,155,39,0.3)] hover:shadow-[0_0_35px_rgba(197,155,39,0.5)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                  <Sparkles className="w-4 h-4 text-slate-950" />
-                  <span>Publish Blog Article</span>
+                  {isPublishingBlog ? (
+                    <div className="w-5 h-5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 text-slate-950" />
+                      <span>{editingBlogId ? "Update Article" : "Publish Blog Article"}</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>
@@ -1022,46 +1142,73 @@ export default function AdminDashboardPage() {
                 </Link>
               </div>
 
-              <div className="grid grid-cols-1 gap-4">
-                {blogsList.map((blog) => (
-                  <div
-                    key={blog.id}
-                    className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-2xl bg-slate-900/60 border border-white/10 hover:border-[#C59B27]/40 transition-all"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="relative w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-white/10">
-                        <img src={blog.coverImage} alt={blog.title} className="w-full h-full object-cover" />
+              {isLoadingBlogs ? (
+                <div className="p-8 text-center">
+                  <div className="w-6 h-6 border-2 border-[#C59B27] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                  <span className="text-xs text-slate-400">Loading blogs from Supabase...</span>
+                </div>
+              ) : blogsList.length === 0 ? (
+                <div className="p-8 text-center bg-slate-900/40 rounded-2xl border border-white/10">
+                  <p className="text-sm text-slate-400">No blogs published yet in Supabase database.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-4">
+                  {blogsList.map((blog) => (
+                    <div
+                      key={blog.id}
+                      className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-2xl bg-slate-900/60 border transition-all ${
+                        editingBlogId === blog.id
+                          ? "border-[#C59B27] bg-[#C59B27]/10"
+                          : "border-white/10 hover:border-[#C59B27]/40"
+                      }`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="relative w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-white/10">
+                          <img
+                            src={blog.image_url || blog.coverImage}
+                            alt={blog.title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div>
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-[#C59B27]">
+                            {blog.category} • {blog.publishedAt}
+                          </span>
+                          <h4 className="text-sm font-bold text-white line-clamp-1">{blog.title}</h4>
+                          <p className="text-xs text-slate-400 line-clamp-1 mt-0.5">{blog.excerpt}</p>
+                        </div>
                       </div>
-                      <div>
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#C59B27]">
-                          {blog.category} • {blog.publishedAt}
-                        </span>
-                        <h4 className="text-sm font-bold text-white line-clamp-1">{blog.title}</h4>
-                        <p className="text-xs text-slate-400 line-clamp-1 mt-0.5">{blog.excerpt}</p>
+
+                      <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
+                        <Link
+                          href={`/blog/${blog.slug}`}
+                          target="_blank"
+                          className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-slate-200 transition-colors flex items-center gap-1"
+                        >
+                          <span>View</span>
+                          <ExternalLink className="w-3 h-3 text-[#C59B27]" />
+                        </Link>
+
+                        <button
+                          onClick={() => handleEditBlog(blog)}
+                          className="px-3 py-1.5 rounded-lg bg-[#C59B27]/10 hover:bg-[#C59B27]/20 border border-[#C59B27]/30 text-xs font-semibold text-[#C59B27] transition-colors flex items-center gap-1"
+                        >
+                          <FileEdit className="w-3.5 h-3.5" />
+                          <span>Edit</span>
+                        </button>
+
+                        <button
+                          onClick={() => handleDeleteBlog(blog.id)}
+                          className="px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-xs font-semibold text-red-300 transition-colors flex items-center gap-1"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Delete</span>
+                        </button>
                       </div>
                     </div>
-
-                    <div className="flex items-center gap-3 self-end sm:self-center shrink-0">
-                      <Link
-                        href={`/blog/${blog.slug}`}
-                        target="_blank"
-                        className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-slate-200 transition-colors flex items-center gap-1"
-                      >
-                        <span>View</span>
-                        <ExternalLink className="w-3 h-3 text-[#C59B27]" />
-                      </Link>
-
-                      <button
-                        onClick={() => handleDeleteBlog(blog.id)}
-                        className="px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-xs font-semibold text-red-300 transition-colors flex items-center gap-1"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        <span>Delete</span>
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </motion.div>
         )}
