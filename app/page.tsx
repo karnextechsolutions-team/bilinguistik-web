@@ -331,7 +331,7 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="text-base sm:text-xl text-slate-300 max-w-2xl mx-auto font-light leading-relaxed"
+              className="text-base sm:text-xl text-slate-300 max-w-2xl mx-auto font-light leading-relaxed whitespace-pre-line"
             >
               {cms.heroSubtitle || DEFAULT_HOMEPAGE_CMS.heroSubtitle}
             </motion.p>
