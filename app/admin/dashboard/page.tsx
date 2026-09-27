@@ -27,8 +27,22 @@ import {
   PanelBottom,
   X
 } from "lucide-react";
-import { fetchBlogs, createBlog, updateBlog, deleteBlogById, generateSlug, BlogPost } from "@/lib/blogs";
+import dynamic from "next/dynamic";
+import "react-quill-new/dist/quill.snow.css";
+import { fetchBlogs, createBlog, updateBlog, deleteBlogById, generateSlug, stripHtml, BlogPost } from "@/lib/blogs";
 import { HomepageCMSContent, DEFAULT_HOMEPAGE_CMS, fetchHomepageCMS, saveHomepageCMS } from "@/lib/cms";
+
+const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
+
+const quillModules = {
+  toolbar: [
+    ["bold", "italic", "underline"],
+    [{ list: "ordered" }, { list: "bullet" }],
+    ["clean"],
+  ],
+};
+
+const quillFormats = ["bold", "italic", "underline", "list"];
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -1018,15 +1032,17 @@ export default function AdminDashboardPage() {
                     Category
                   </label>
                   <select
+                    id="blog-category-select"
+                    name="category"
                     value={newCategory}
                     onChange={(e) => setNewCategory(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-slate-900/80 border border-white/10 text-white text-sm focus:outline-none focus:border-[#C59B27] transition-all"
+                    className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-white/10 text-white text-sm focus:outline-none focus:border-[#C59B27] transition-all cursor-pointer"
                   >
-                    <option value="Document Guide">Document Guide</option>
-                    <option value="Education">Education</option>
-                    <option value="Legal & Business">Legal & Business</option>
-                    <option value="Embassy & Visas">Embassy & Visas</option>
-                    <option value="General News">General News</option>
+                    <option value="Document Guide" className="bg-slate-900 text-white">Document Guide</option>
+                    <option value="Education" className="bg-slate-900 text-white">Education</option>
+                    <option value="Legal & Business" className="bg-slate-900 text-white">Legal & Business</option>
+                    <option value="Embassy & Visas" className="bg-slate-900 text-white">Embassy & Visas</option>
+                    <option value="General News" className="bg-slate-900 text-white">General News</option>
                   </select>
                 </div>
               </div>
@@ -1083,15 +1099,15 @@ export default function AdminDashboardPage() {
               {/* Blog Content */}
               <div>
                 <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-                  Blog Content (Markdown or Plain Text) *
+                  Blog Content (Rich Text Editor) *
                 </label>
-                <textarea
-                  required
-                  rows={8}
-                  placeholder="Write the full content of your blog post here..."
+                <ReactQuill
+                  theme="snow"
                   value={newContent}
-                  onChange={(e) => setNewContent(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-slate-900/80 border border-white/10 text-white text-sm focus:outline-none focus:border-[#C59B27] transition-all font-sans leading-relaxed"
+                  onChange={(content) => setNewContent(content)}
+                  modules={quillModules}
+                  formats={quillFormats}
+                  placeholder="Write the full content of your blog post here..."
                 />
               </div>
 
@@ -1175,7 +1191,7 @@ export default function AdminDashboardPage() {
                             {blog.category} • {blog.publishedAt}
                           </span>
                           <h4 className="text-sm font-bold text-white line-clamp-1">{blog.title}</h4>
-                          <p className="text-xs text-slate-400 line-clamp-1 mt-0.5">{blog.excerpt}</p>
+                          <p className="text-xs text-slate-400 line-clamp-1 mt-0.5">{stripHtml(blog.excerpt || blog.content)}</p>
                         </div>
                       </div>
 

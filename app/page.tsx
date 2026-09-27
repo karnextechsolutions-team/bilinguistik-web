@@ -30,25 +30,43 @@ import {
   Check,
   Star,
   HelpCircle,
-  Info
+  Info,
+  Calendar,
+  BookOpen
 } from "lucide-react";
+import useEmblaCarousel from "embla-carousel-react";
+import Autoplay from "embla-carousel-autoplay";
+import { fetchBlogs, BlogPost } from "@/lib/blogs";
 import { HomepageCMSContent, DEFAULT_HOMEPAGE_CMS, fetchHomepageCMS } from "@/lib/cms";
 
 export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  // Dynamic CMS State with Fallbacks
+  // Dynamic CMS & Blogs State with Fallbacks
   const [cms, setCms] = useState<HomepageCMSContent>(DEFAULT_HOMEPAGE_CMS);
+  const [blogs, setBlogs] = useState<BlogPost[]>([]);
+  const [isLoadingBlogs, setIsLoadingBlogs] = useState<boolean>(true);
+
+  const [emblaRef, emblaApi] = useEmblaCarousel(
+    { loop: true, align: "start", slidesToScroll: 1 },
+    [Autoplay({ delay: 4000, stopOnInteraction: false, stopOnMouseEnter: true })]
+  );
+
+  const scrollPrev = () => emblaApi && emblaApi.scrollPrev();
+  const scrollNext = () => emblaApi && emblaApi.scrollNext();
 
   useEffect(() => {
-    async function loadCmsData() {
-      const data = await fetchHomepageCMS();
-      if (data) {
-        setCms(data);
-      }
+    async function loadData() {
+      const [cmsData, blogsData] = await Promise.all([
+        fetchHomepageCMS(),
+        fetchBlogs(),
+      ]);
+      if (cmsData) setCms(cmsData);
+      if (blogsData) setBlogs(blogsData.slice(0, 5));
+      setIsLoadingBlogs(false);
     }
-    loadCmsData();
+    loadData();
   }, []);
 
   const waLink = cms.footerWhatsApp
@@ -783,8 +801,8 @@ export default function Home() {
             className="p-8 sm:p-10 rounded-2xl bg-gradient-to-r from-[#0B1B3D] via-[#162C5B] to-[#0B1B3D] text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-[0_0_50px_rgba(197,155,39,0.2)] border border-[#C59B27]/30"
           >
             <div className="space-y-1.5 text-center md:text-left">
-              <h3 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-                Ready to Translate Your Documents?
+              <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-white tracking-tight leading-snug">
+                Send us a clear scan or photograph of your document and receive a quotation based on your specific requirements.
               </h3>
             </div>
             <a
@@ -797,6 +815,130 @@ export default function Home() {
               <span>Request a Translation Quote</span>
             </a>
           </motion.div>
+        </div>
+      </section>
+
+      {/* 9. LATEST INSIGHTS BLOG SLIDER */}
+      <section className="relative py-16 px-4 sm:px-6 lg:px-8 bg-[#070C1B] border-t border-white/10">
+        <div className="max-w-7xl mx-auto">
+          {/* Header Row */}
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#C59B27]/10 border border-[#C59B27]/30 text-[#C59B27] text-xs font-bold uppercase tracking-widest mb-3">
+                <BookOpen className="w-3.5 h-3.5" />
+                <span>Blog Articles</span>
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+                Latest Insights
+              </h2>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <Link
+                href="/blog"
+                className="text-xs sm:text-sm font-bold text-[#C59B27] hover:text-[#E2B746] flex items-center gap-1 transition-colors"
+              >
+                <span>View All Articles</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+              <div className="hidden sm:flex items-center gap-2">
+                <button
+                  onClick={scrollPrev}
+                  className="p-2.5 rounded-xl bg-white/5 border border-white/10 hover:border-[#C59B27] text-white hover:text-[#C59B27] transition-colors cursor-pointer"
+                  aria-label="Previous Slide"
+                >
+                  <ChevronRight className="w-4 h-4 rotate-180" />
+                </button>
+                <button
+                  onClick={scrollNext}
+                  className="p-2.5 rounded-xl bg-white/5 border border-white/10 hover:border-[#C59B27] text-white hover:text-[#C59B27] transition-colors cursor-pointer"
+                  aria-label="Next Slide"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Carousel Slider */}
+          {isLoadingBlogs ? (
+            <div className="py-12 text-center bg-white/[0.02] rounded-3xl border border-white/10">
+              <div className="w-6 h-6 border-2 border-[#C59B27] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+              <span className="text-xs text-slate-400">Loading latest insights...</span>
+            </div>
+          ) : blogs.length === 0 ? (
+            <div className="py-12 text-center bg-white/[0.02] rounded-3xl border border-white/10">
+              <p className="text-sm text-slate-400">No blog articles available at the moment.</p>
+            </div>
+          ) : (
+            <div className="overflow-hidden cursor-grab active:cursor-grabbing" ref={emblaRef}>
+              <div className="flex -ml-6">
+                {blogs.map((blog) => (
+                  <div
+                    key={blog.id}
+                    className="flex-[0_0_100%] sm:flex-[0_0_50%] lg:flex-[0_0_33.333333%] pl-6 min-w-0"
+                  >
+                    <div className="bg-white/[0.04] backdrop-blur-xl rounded-3xl overflow-hidden border border-white/10 hover:border-[#C59B27]/60 hover:bg-white/[0.07] shadow-xl hover:shadow-[0_0_35px_rgba(197,155,39,0.15)] transition-all duration-300 flex flex-col h-full group">
+                      {/* Cover Image */}
+                      <div className="relative h-48 w-full overflow-hidden bg-slate-900 shrink-0">
+                        <img
+                          src={blog.coverImage || blog.image_url}
+                          alt={blog.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                        <div className="absolute top-3 left-3">
+                          <span className="px-3 py-1 rounded-lg bg-[#0B1B3D]/80 backdrop-blur-md text-[#C59B27] border border-[#C59B27]/40 text-[11px] font-bold uppercase tracking-wider">
+                            {blog.category}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Content */}
+                      <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
+                        <div className="space-y-2.5">
+                          <div className="flex items-center gap-3 text-slate-400 text-xs font-light">
+                            <span className="flex items-center gap-1.5">
+                              <Calendar className="w-3.5 h-3.5 text-[#C59B27]" />
+                              {blog.publishedAt}
+                            </span>
+                            {blog.readTime && (
+                              <>
+                                <span>•</span>
+                                <span className="flex items-center gap-1.5">
+                                  <Clock className="w-3.5 h-3.5 text-[#C59B27]" />
+                                  {blog.readTime}
+                                </span>
+                              </>
+                            )}
+                          </div>
+
+                          <h3 className="text-lg font-bold text-white group-hover:text-[#C59B27] transition-colors line-clamp-2 leading-snug">
+                            <Link href={`/blog/${blog.slug}`}>{blog.title}</Link>
+                          </h3>
+
+                          {blog.excerpt && (
+                            <p className="text-slate-300 text-xs font-light line-clamp-2 leading-relaxed">
+                              {blog.excerpt}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="pt-3 border-t border-white/10 flex items-center justify-between mt-auto">
+                          <Link
+                            href={`/blog/${blog.slug}`}
+                            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#C59B27] hover:text-[#E2B746] transition-colors"
+                          >
+                            <span>Read More</span>
+                            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
@@ -844,7 +986,7 @@ export default function Home() {
             <div className="space-y-3">
               <h4 className="text-xs font-bold text-white uppercase tracking-widest">Delivery</h4>
               <p className="text-xs sm:text-sm text-slate-400 leading-relaxed font-light">
-                We deliver certified physical hard copies islandwide in Sri Lanka.
+                Hard-copy delivery is available islandwide in Sri Lanka.
               </p>
             </div>
 

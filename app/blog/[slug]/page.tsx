@@ -112,34 +112,10 @@ export default function BlogPostPage({ params }: { params: Promise<{ slug: strin
         </div>
 
         {/* Article Body Content */}
-        <article className="prose prose-invert prose-amber max-w-none space-y-6 text-slate-200 text-base sm:text-lg leading-relaxed font-light">
-          {post.content.split("\n\n").map((paragraph, index) => {
-            if (paragraph.startsWith("### ")) {
-              return (
-                <h3 key={index} className="text-xl sm:text-2xl font-extrabold text-white mt-8 mb-4 border-b border-white/10 pb-2">
-                  {paragraph.replace("### ", "")}
-                </h3>
-              );
-            }
-            if (paragraph.startsWith("- ")) {
-              const items = paragraph.split("\n");
-              return (
-                <ul key={index} className="space-y-2 my-4 list-disc list-inside text-slate-300">
-                  {items.map((item, i) => (
-                    <li key={i} className="pl-1">
-                      <span className="text-slate-200">{item.replace(/^- /, "")}</span>
-                    </li>
-                  ))}
-                </ul>
-              );
-            }
-            return (
-              <p key={index} className="text-slate-300 font-light leading-relaxed">
-                {paragraph}
-              </p>
-            );
-          })}
-        </article>
+        <article
+          className="blog-prose w-full max-w-full text-slate-200 text-base sm:text-lg leading-relaxed font-light break-words whitespace-normal"
+          dangerouslySetInnerHTML={{ __html: post?.content ? post.content.replace(/&nbsp;/g, ' ') : '' }}
+        />
 
         {/* Quote Callout Banner */}
         <div className="mt-14 p-8 sm:p-10 rounded-3xl bg-gradient-to-r from-[#0B1B3D] via-[#162C5B] to-[#0B1B3D] border border-[#C59B27]/40 shadow-2xl text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-6">

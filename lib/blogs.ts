@@ -26,6 +26,20 @@ export function generateSlug(title: string): string {
   return baseSlug || "blog-post-" + Date.now();
 }
 
+export function stripHtml(html: string): string {
+  if (!html) return "";
+  return html
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/<[^>]*>/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export function formatBlogPost(raw: any): BlogPost {
   const createdAt = raw.created_at ? new Date(raw.created_at) : new Date();
   const formattedDate = createdAt.toLocaleDateString("en-US", {
@@ -34,10 +48,11 @@ export function formatBlogPost(raw: any): BlogPost {
     day: "numeric",
   });
 
-  const wordCount = raw.content ? raw.content.trim().split(/\s+/).length : 0;
+  const cleanText = stripHtml(raw.content || "");
+  const wordCount = cleanText ? cleanText.split(/\s+/).length : 0;
   const readTime = Math.max(1, Math.ceil(wordCount / 200)) + " min read";
-  const excerpt = raw.content
-    ? raw.content.replace(/[#*`_]/g, "").slice(0, 150).trim() + "..."
+  const excerpt = cleanText
+    ? cleanText.slice(0, 150).trim() + (cleanText.length > 150 ? "..." : "")
     : "";
 
   const coverImage =
