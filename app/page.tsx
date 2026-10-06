@@ -332,7 +332,7 @@ export default function Home() {
               <span>Sinhala ↔ English</span>
               <br />
               <span className="bg-gradient-to-r from-[#C59B27] via-[#E2B746] to-[#A37B1B] bg-clip-text text-transparent drop-shadow-[0_10px_35px_rgba(197,155,39,0.3)]">
-                Sworn Translations
+                Sworn Translation &amp; Language Solutions
               </span>
             </motion.h1>
 
@@ -1008,7 +1008,7 @@ export default function Home() {
                   <span>{cms.footerEmail || DEFAULT_HOMEPAGE_CMS.footerEmail}</span>
                 </a>
                 <div className="flex items-center gap-2 text-slate-400">
-                  <span className="text-[#C59B27] font-bold">WWW</span>
+                  <span className="text-[#C59B27] font-bold"></span>
                   <span>{cms.footerWebsite || DEFAULT_HOMEPAGE_CMS.footerWebsite}</span>
                 </div>
               </div>
