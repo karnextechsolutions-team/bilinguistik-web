@@ -3,7 +3,8 @@
 import { use, useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Calendar, Clock, User, MessageSquare, BookOpen, Mail } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, User, MessageSquare, BookOpen, Mail, Link as LinkIcon, Check } from "lucide-react";
+import { FaFacebook, FaTwitter, FaLinkedin, FaWhatsapp } from "react-icons/fa";
 import Navbar from "@/components/Navbar";
 import { fetchBlogBySlug, BlogPost } from "@/lib/blogs";
 import { HomepageCMSContent, DEFAULT_HOMEPAGE_CMS, fetchHomepageCMS } from "@/lib/cms";
@@ -14,6 +15,8 @@ export default function BlogPostPage({ params }: { params: Promise<{ slug: strin
 
   const [post, setPost] = useState<BlogPost | null | undefined>(undefined);
   const [cms, setCms] = useState<HomepageCMSContent>(DEFAULT_HOMEPAGE_CMS);
+  const [isCopied, setIsCopied] = useState(false);
+  const [currentUrl, setCurrentUrl] = useState("");
 
   useEffect(() => {
     async function loadData() {
@@ -26,6 +29,20 @@ export default function BlogPostPage({ params }: { params: Promise<{ slug: strin
     }
     loadData();
   }, [slug]);
+
+  useEffect(() => {
+    setCurrentUrl(window.location.href);
+  }, []);
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy link: ", err);
+    }
+  };
 
   const waLink = cms.footerWhatsApp
     ? `https://wa.me/${cms.footerWhatsApp.replace(/[^0-9]/g, "")}`
@@ -113,9 +130,74 @@ export default function BlogPostPage({ params }: { params: Promise<{ slug: strin
 
         {/* Article Body Content */}
         <article
-          className="blog-prose w-full max-w-full text-slate-200 text-base sm:text-lg leading-relaxed font-light break-words whitespace-normal"
+          className="blog-prose w-full max-w-full text-slate-200 text-base sm:text-lg leading-relaxed font-light break-words whitespace-normal prose-p:my-2 prose-li:my-0"
           dangerouslySetInnerHTML={{ __html: post?.content ? post.content.replace(/&nbsp;/g, ' ') : '' }}
         />
+
+        {/* Social Share Component */}
+        <div className="mt-12 pt-8 border-t border-white/10">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+            <h3 className="text-lg font-bold text-white">Share this article</h3>
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                onClick={handleCopyLink}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-sm font-semibold"
+              >
+                {isCopied ? (
+                  <>
+                    <Check className="w-4 h-4 text-emerald-400" />
+                    <span className="text-emerald-400">Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <LinkIcon className="w-4 h-4" />
+                    <span>Copy Link</span>
+                  </>
+                )}
+              </button>
+              <a
+                href={`https://api.whatsapp.com/send?text=${encodeURIComponent(post.title)}%20${encodeURIComponent(currentUrl)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors flex items-center gap-2"
+                title="Share on WhatsApp"
+              >
+                <FaWhatsapp className="w-4 h-4" />
+                <span className="sr-only">WhatsApp</span>
+              </a>
+              <a
+                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2.5 rounded-xl bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-colors flex items-center gap-2"
+                title="Share on Facebook"
+              >
+                <FaFacebook className="w-4 h-4" />
+                <span className="sr-only">Facebook</span>
+              </a>
+              <a
+                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(currentUrl)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2.5 rounded-xl bg-sky-500/10 text-sky-400 hover:bg-sky-500/20 transition-colors flex items-center gap-2"
+                title="Share on Twitter"
+              >
+                <FaTwitter className="w-4 h-4" />
+                <span className="sr-only">Twitter</span>
+              </a>
+              <a
+                href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(currentUrl)}&title=${encodeURIComponent(post.title)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 transition-colors flex items-center gap-2"
+                title="Share on LinkedIn"
+              >
+                <FaLinkedin className="w-4 h-4" />
+                <span className="sr-only">LinkedIn</span>
+              </a>
+            </div>
+          </div>
+        </div>
 
         {/* Quote Callout Banner */}
         <div className="mt-14 p-8 sm:p-10 rounded-3xl bg-gradient-to-r from-[#0B1B3D] via-[#162C5B] to-[#0B1B3D] border border-[#C59B27]/40 shadow-2xl text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-6">

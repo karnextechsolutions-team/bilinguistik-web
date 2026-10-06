@@ -973,7 +973,7 @@ export default function Home() {
 
             {/* Quick Links */}
             <div className="space-y-3">
-              <h4 className="text-xs font-bold text-white uppercase tracking-widest">Services</h4>
+              <h4 className="text-xs font-bold text-white uppercase tracking-widest">SWORN TRANSLATION OTHER SERVICES</h4>
               <ul className="space-y-2 text-xs sm:text-sm text-slate-400 font-light">
                 <li><Link href="#services" className="hover:text-[#C59B27] transition-colors">{cms.service1Title || DEFAULT_HOMEPAGE_CMS.service1Title}</Link></li>
                 <li><Link href="#services" className="hover:text-[#C59B27] transition-colors">{cms.service2Title || DEFAULT_HOMEPAGE_CMS.service2Title}</Link></li>

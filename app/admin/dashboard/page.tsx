@@ -36,13 +36,14 @@ const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
 
 const quillModules = {
   toolbar: [
+    [{ 'size': ['small', false, 'large', 'huge'] }],
     ["bold", "italic", "underline"],
     [{ list: "ordered" }, { list: "bullet" }],
     ["clean"],
   ],
 };
 
-const quillFormats = ["bold", "italic", "underline", "list"];
+const quillFormats = ["size", "bold", "italic", "underline", "list"];
 
 export default function AdminDashboardPage() {
   const router = useRouter();
