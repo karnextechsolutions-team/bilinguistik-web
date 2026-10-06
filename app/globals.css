@@ -92,6 +92,10 @@
   line-height: 1.7;
 }
 
+.ql-editor p {
+  margin-bottom: 0.2rem !important;
+}
+
 .ql-editor.ql-blank::before {
   color: #64748b !important;
   font-style: normal;
@@ -120,7 +124,7 @@
 .quill-blog-content {
   color: #e2e8f0;
   font-size: 1.125rem;
-  line-height: 1.8;
+  line-height: 1.6;
   font-weight: 300;
   white-space: normal !important;
   word-break: normal !important;
@@ -135,7 +139,7 @@
 }
 
 .blog-prose p {
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.5rem;
 }
 
 .blog-prose strong,

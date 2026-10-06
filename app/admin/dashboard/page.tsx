@@ -38,12 +38,13 @@ const quillModules = {
   toolbar: [
     [{ 'size': ['small', false, 'large', 'huge'] }],
     ["bold", "italic", "underline"],
+    [{ 'align': [] }],
     [{ list: "ordered" }, { list: "bullet" }],
     ["clean"],
   ],
 };
 
-const quillFormats = ["size", "bold", "italic", "underline", "list"];
+const quillFormats = ["size", "bold", "italic", "underline", "align", "list"];
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -161,6 +162,14 @@ export default function AdminDashboardPage() {
   const handlePublishOrUpdateBlog = async (e: FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim() || !newContent.trim()) return;
+
+    if (newContent.includes('data:image/')) {
+      setBlogNotice({
+        type: "error",
+        message: "Please use Image URLs instead of pasting images directly",
+      });
+      return;
+    }
 
     setIsPublishingBlog(true);
     setBlogNotice(null);
@@ -1130,7 +1139,10 @@ export default function AdminDashboardPage() {
                   className="px-8 py-3.5 rounded-xl bg-gradient-to-r from-[#C59B27] via-[#E2B746] to-[#A37B1B] text-slate-950 font-bold text-sm shadow-[0_0_25px_rgba(197,155,39,0.3)] hover:shadow-[0_0_35px_rgba(197,155,39,0.5)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {isPublishingBlog ? (
-                    <div className="w-5 h-5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+                    <>
+                      <div className="w-5 h-5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+                      <span>Saving...</span>
+                    </>
                   ) : (
                     <>
                       <Sparkles className="w-4 h-4 text-slate-950" />
