@@ -329,19 +329,11 @@ export default function Home() {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.15]"
             >
-              {cms.heroTitle.includes("\n") ? (
-                <>
-                  {cms.heroTitle.split("\n")[0]}
-                  <br />
-                  <span className="bg-gradient-to-r from-[#C59B27] via-[#E2B746] to-[#A37B1B] bg-clip-text text-transparent drop-shadow-[0_10px_35px_rgba(197,155,39,0.3)]">
-                    {cms.heroTitle.split("\n").slice(1).join(" ")}
-                  </span>
-                </>
-              ) : (
-                <span className="bg-gradient-to-r from-white via-amber-100 to-[#C59B27] bg-clip-text text-transparent">
-                  {cms.heroTitle || DEFAULT_HOMEPAGE_CMS.heroTitle}
-                </span>
-              )}
+              <span>Sinhala ↔ English</span>
+              <br />
+              <span className="bg-gradient-to-r from-[#C59B27] via-[#E2B746] to-[#A37B1B] bg-clip-text text-transparent drop-shadow-[0_10px_35px_rgba(197,155,39,0.3)]">
+                Sworn Translations
+              </span>
             </motion.h1>
 
             {/* Subtext */}
@@ -975,10 +967,15 @@ export default function Home() {
             <div className="space-y-3">
               <h4 className="text-xs font-bold text-white uppercase tracking-widest">SWORN TRANSLATION OTHER SERVICES</h4>
               <ul className="space-y-2 text-xs sm:text-sm text-slate-400 font-light">
-                <li><Link href="#services" className="hover:text-[#C59B27] transition-colors">{cms.service1Title || DEFAULT_HOMEPAGE_CMS.service1Title}</Link></li>
-                <li><Link href="#services" className="hover:text-[#C59B27] transition-colors">{cms.service2Title || DEFAULT_HOMEPAGE_CMS.service2Title}</Link></li>
-                <li><Link href="#services" className="hover:text-[#C59B27] transition-colors">{cms.service3Title || DEFAULT_HOMEPAGE_CMS.service3Title}</Link></li>
-                <li><Link href="#services" className="hover:text-[#C59B27] transition-colors">{cms.service4Title || DEFAULT_HOMEPAGE_CMS.service4Title}</Link></li>
+                <li>(Sinhala/ English)</li>
+                <li>Transcription Services (Sinhala/ English)</li>
+                <li>CV &amp; Career Documentation</li>
+                <li>Language Support - SOPs &amp; Personal Statements</li>
+                <li>Book &amp; Document Formatting</li>
+                <li>Professional Correspondence</li>
+                <li>Corporate Documentation</li>
+                <li>Secretarial &amp; HR Support</li>
+                <li>Business Profiles &amp; Prospects</li>
               </ul>
             </div>
 
