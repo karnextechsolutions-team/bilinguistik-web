@@ -119,6 +119,66 @@
   fill: #C59B27 !important;
 }
 
+/* Line-height (line spacing) dropdown */
+.ql-snow .ql-picker.ql-lineHeight {
+  width: 44px;
+}
+
+/* Replace the default text label with a line-spacing icon */
+.ql-snow .ql-picker.ql-lineHeight .ql-picker-label {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-right: 18px;
+}
+
+.ql-snow .ql-picker.ql-lineHeight .ql-picker-label::before {
+  content: "";
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  line-height: 1;
+  background-color: #94a3b8;
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M8 6h13M8 12h13M8 18h13'/><path d='M3 8V4M1.5 5.5 3 4l1.5 1.5M3 16v4M1.5 18.5 3 20l1.5-1.5'/></svg>") center / contain no-repeat;
+  mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M8 6h13M8 12h13M8 18h13'/><path d='M3 8V4M1.5 5.5 3 4l1.5 1.5M3 16v4M1.5 18.5 3 20l1.5-1.5'/></svg>") center / contain no-repeat;
+}
+
+.ql-snow .ql-picker.ql-lineHeight .ql-picker-label:hover::before,
+.ql-snow .ql-picker.ql-lineHeight.ql-expanded .ql-picker-label::before {
+  background-color: #C59B27;
+}
+
+/* Hide the selected-value text; the icon represents the control */
+.ql-snow .ql-picker.ql-lineHeight .ql-picker-label[data-value]::before,
+.ql-snow .ql-picker.ql-lineHeight .ql-picker-label[data-label]::before {
+  content: "";
+}
+
+/* Dropdown options */
+.ql-snow .ql-picker.ql-lineHeight .ql-picker-options {
+  background-color: #0f172a;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  min-width: 70px;
+}
+
+.ql-snow .ql-picker.ql-lineHeight .ql-picker-item {
+  color: #cbd5e1;
+}
+
+.ql-snow .ql-picker.ql-lineHeight .ql-picker-item:hover,
+.ql-snow .ql-picker.ql-lineHeight .ql-picker-item.ql-selected {
+  color: #C59B27;
+}
+
+.ql-snow .ql-picker.ql-lineHeight .ql-picker-item::before {
+  content: attr(data-value);
+}
+
+.ql-snow .ql-picker.ql-lineHeight .ql-picker-item:not([data-value])::before {
+  content: "Default";
+}
+
+
 /* Blog Article HTML Prose Styling */
 .blog-prose,
 .quill-blog-content {

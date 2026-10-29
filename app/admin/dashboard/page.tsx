@@ -32,19 +32,41 @@ import "react-quill-new/dist/quill.snow.css";
 import { fetchBlogs, createBlog, updateBlog, deleteBlogById, generateSlug, stripHtml, BlogPost } from "@/lib/blogs";
 import { HomepageCMSContent, DEFAULT_HOMEPAGE_CMS, fetchHomepageCMS, saveHomepageCMS } from "@/lib/cms";
 
-const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
+const LINE_HEIGHTS = ["1.0", "1.2", "1.5", "2.0", "2.5"];
+
+// Quill is loaded client-side only, so the custom line-height attributor is
+// registered inside the dynamic import, before any editor instance is created.
+const ReactQuill = dynamic(
+  async () => {
+    const mod = await import("react-quill-new");
+    const Quill = mod.Quill;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const Parchment: any = Quill.import("parchment");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const LineHeight: any =
+      Quill.import("attributors/style/lineheight") ||
+      new Parchment.StyleAttributor("lineHeight", "line-height", {
+        scope: Parchment.Scope.BLOCK,
+        whitelist: LINE_HEIGHTS,
+      });
+    Quill.register(LineHeight, true);
+    return mod;
+  },
+  { ssr: false }
+);
 
 const quillModules = {
   toolbar: [
     [{ 'size': ['small', false, 'large', 'huge'] }],
     ["bold", "italic", "underline"],
     [{ 'align': [] }],
+    [{ 'lineHeight': LINE_HEIGHTS }],
     [{ list: "ordered" }, { list: "bullet" }],
     ["clean"],
   ],
 };
 
-const quillFormats = ["size", "bold", "italic", "underline", "align", "list"];
+const quillFormats = ["size", "bold", "italic", "underline", "align", "lineHeight", "list"];
 
 export default function AdminDashboardPage() {
   const router = useRouter();
